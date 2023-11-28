@@ -19,6 +19,16 @@ class MainWindow(QWidget):
         self.update = True
         self.interval = 0.01
 
+        self.helpIndex = 0
+        self.helpList = ["'start cam' 버튼을 누르면\n여러 쓰레드를 한꺼번에 실행하기 때문에\n로딩에 꽤 오랜 시간이 걸립니다.\n다시 한번 누르면 카메라가 꺼집니다.",
+                         "'take picture' 버튼을 누르면\n현재 보이는 화면의 사진이 찍히고\nstorage의 photos에 저장됩니다.",
+                         "'open gallary' 버튼을 눌러서\n현재 photos에 있는 사진들을 갤러리처럼\n확인할 수 있습니다.",
+                         "'setting'를 누르면 2가지 탭이 있습니다.\n================================\n첫번째 탭인 'Setting'은 화면과 관련된\n요소들을 조정할 수 있게 해줍니다.\n\n\n[1]",
+                         "왼쪽 위에 있는 드롭다운은 필터를 적용합니다.\n그 아래의 드롭다운은 사진 촬영 시 저장할\n파일의 확장자를 지정합니다.\n\n\n[2]",
+                         "오른쪽에 있는 슬라이드들은 오른쪽부터\n채도와 밝기를 조절할 수 있습니다.\n\n\n[3]",
+                         "'setting'를 누르면 2가지 탭이 있습니다.\n================================\n두번째 탭인 'Debug'는 얼굴을 포함한\n여러 신체부위를 인식하는 기능을 가집니다.\n이는 사용자를 위한 기능이 아닙니다.",
+                         "'start recording' 버튼을 누르면\n녹화가 시작되고 다시 한번 누르면\n녹화가 종료됨과 동시에 storage의 videos에\n저장됩니다.",]
+
         self.initUI(size)
         self.video = vd.Video(self, QSize(self.frm.width(), self.frm.height()))
 
@@ -38,22 +48,33 @@ class MainWindow(QWidget):
         self.video_settingsBtn = QPushButton('settings', self)
         self.video_settingsBtn.clicked.connect(self.openSettings)
 
-        lastImgBorder = QGroupBox("Lastest Image")
+        HelpBorder = QGroupBox("HELP")
 
-        self.lastView = QLabel(self)
-        self.lastView.setFrameShape(QFrame.Panel)
-        self.lastView.setFixedSize(12*28, 9*28)
+        self.helpView = QLabel(self)
+        self.helpView.setAlignment(Qt.AlignCenter)
+        self.helpView.setFrameShape(QFrame.Panel)
+        self.helpView.setFixedSize(12*28, 9*28)
+
+        self.beforeHelpBtn = QPushButton("<")
+        self.beforeHelpBtn.clicked.connect(self.beforeHelpIndex)
+        self.afterHelpBtn = QPushButton(">")
+        self.afterHelpBtn.clicked.connect(self.afterHelpIndex)
+
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.beforeHelpBtn)
+        hbox.addWidget(self.afterHelpBtn)
 
         vbox = QVBoxLayout()
-        vbox.addWidget(self.lastView)
-        lastImgBorder.setLayout(vbox)
+        vbox.addWidget(self.helpView)
+        vbox.addLayout(hbox)
+        HelpBorder.setLayout(vbox)
 
         toolField.addWidget(self.startBtn)
         toolField.addWidget(self.takephotoBtn)
         toolField.addWidget(self.storage_manageBtn)
         toolField.addWidget(self.video_settingsBtn)
         toolField.addWidget(self.recordVideoBtn)
-        toolField.addWidget(lastImgBorder)
+        toolField.addWidget(HelpBorder)
 
         # get video
         self.frm = QLabel(self)
@@ -77,6 +98,8 @@ class MainWindow(QWidget):
         mainField = QHBoxLayout()
         mainField.addLayout(videoField)
         mainField.addLayout(toolField)
+
+        self.setHelp()
 
         self.setLayout(mainField)
         self.setWindowTitle("Camera App")
@@ -114,8 +137,26 @@ class MainWindow(QWidget):
             self.video.saveVideo = True
             self.video.now = None
     
+    def setHelp(self):
+        self.helpView.setText(self.helpList[self.helpIndex])
+    
+    def beforeHelpIndex(self):
+        self.helpIndex -= 1
+        if self.helpIndex < 0:
+            self.helpIndex = len(self.helpList)-1
+        
+        self.setHelp()
+
+    def afterHelpIndex(self):
+        self.helpIndex += 1
+        if self.helpIndex >= len(self.helpList):
+            self.helpIndex = 0
+        
+        self.setHelp()
+    
     def take_once(self):
         self.video.photo_status = "Once"
+        QMessageBox.about(self, 'Alert','Picture saved.')
     
     def getPathes(self):
         photo_path = self.video.PATH + "\\storage\\photos\\"
@@ -149,7 +190,6 @@ class MainWindow(QWidget):
             self.gallary_back.setDisabled(True)
             self.gallary_go.setEnabled(True)
         elif path_length == 1:
-            print("de")
             self.gallary_back.setEnabled(True)
             self.gallary_go.setEnabled(True)
         elif self.GALLARY_NOWINDEX == path_length-1:
@@ -239,6 +279,20 @@ class MainWindow(QWidget):
     def changeExtension(self, value:str):
         self.video.extension = value.lower()
 
+    def resetValues(self):
+        self.video.colorFilterOption = "None"
+        self.colorFilterSelect.setCurrentIndex(0)
+
+        self.video.extension = "PNG"
+        self.extensionSelect.setCurrentIndex(0)
+
+        self.video.saturationScale = 1
+        self.saturationSlide.setValue(50)
+
+        self.video.add_amount = 0
+        self.video.sub_amount = 0
+        self.brightnessSlide.setValue(50)
+
     def get_settingTab(self) -> QWidget:
         tab = QWidget()
         self.colorFilters = ["None", "Gray", "Warm", "Cool", "Contrast", "Daylight", "Reversal", "Cartoon"]
@@ -263,9 +317,13 @@ class MainWindow(QWidget):
 
         extensionFrame.setLayout(vbox)
 
+        self.resetBtn = QPushButton("Reset", self)
+        self.resetBtn.clicked.connect(self.resetValues)
+
         filters_field = QVBoxLayout()
         filters_field.addWidget(self.colorFilterSelect)
         filters_field.addWidget(extensionFrame)
+        filters_field.addWidget(self.resetBtn)
 
         brightGroup = QGroupBox("Bright")
 

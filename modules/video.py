@@ -1,5 +1,6 @@
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 from threading import Thread
 
 from modules import colorfilters
@@ -126,7 +127,7 @@ class Video(QObject):
         try:
             self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         except Exception as e:
-            print(f"Cam Error =>{e}")
+            print(f"Cam Error: {e}")
         else:
             self.bThread = True
             self.thrd = Thread(target=self.threadFunc)
@@ -139,7 +140,7 @@ class Video(QObject):
         try:
             self.cap.isOpened()
         except Exception as e:
-            print(f"Cam is not opened. => {e}")
+            print(f"Cam is not opened: {e}")
         else:
             self.cap.release()
     
@@ -332,4 +333,4 @@ class Video(QObject):
             
             time.sleep(self.interval)
         
-        print('thread finished.')
+        print('Camera finished.')
