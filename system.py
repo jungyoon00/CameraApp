@@ -48,17 +48,49 @@ class MainWindow(QWidget):
         self.video_settingsBtn = QPushButton('settings', self)
         self.video_settingsBtn.clicked.connect(self.openSettings)
 
+        buttons = [self.startBtn, self.takephotoBtn, self.recordVideoBtn, self.storage_manageBtn, self.video_settingsBtn]
+        for button in buttons:
+            button.setStyleSheet("border-radius: 2px;"
+                                 "border: 2px solid #E0E1DD;"
+                                 "background: none;"
+                                 "font-family: Arial;"
+                                 "color: #E0E1DD;"
+                                 "font-weight: 400%;")
+            button.setMaximumHeight(30)
+
         HelpBorder = QGroupBox("HELP")
+        HelpBorder.setStyleSheet("border: 2px solid #E0E1DD;"
+                         "border-radius: 3px;"
+                         "font-size: 15px;"
+                         "color: #E0E1DD;")
 
         self.helpView = QLabel(self)
         self.helpView.setAlignment(Qt.AlignCenter)
         self.helpView.setFrameShape(QFrame.Panel)
         self.helpView.setFixedSize(12*28, 9*28)
 
+        self.helpView.setStyleSheet("border: none;"
+                                    "font: Arial;"
+                                    "font-size: 13px;"
+                                    "font-weight: 300%;"
+                                    "border-radius: 3px;"
+                                    "background-color: #E0E1DD;"
+                                    "color: black;")
+
         self.beforeHelpBtn = QPushButton("<")
         self.beforeHelpBtn.clicked.connect(self.beforeHelpIndex)
+        self.beforeHelpBtn.setMaximumSize(120, 50)
+        self.beforeHelpBtn.setStyleSheet("color: #E0E1DD;"
+                                         "font: Arial;"
+                                         "font-size: 20px;"
+                                         "border: none;")
         self.afterHelpBtn = QPushButton(">")
         self.afterHelpBtn.clicked.connect(self.afterHelpIndex)
+        self.afterHelpBtn.setMaximumSize(120, 50)
+        self.afterHelpBtn.setStyleSheet("color: #E0E1DD;"
+                                        "font: Arial;"
+                                        "font-size: 20px;"
+                                        "border: none;")
 
         hbox = QHBoxLayout()
         hbox.addWidget(self.beforeHelpBtn)
@@ -81,6 +113,10 @@ class MainWindow(QWidget):
         self.frm.setFrameShape(QFrame.Panel)
         self.frm.setFixedSize(120*5, 90*5)
 
+        self.frm.setStyleSheet("background-color: #E0E1DD;"
+                               "border: none;"
+                               "border-radius: 3px;")
+
         self.video_status = QGroupBox("Status")
         self.realtime_fps = QLabel("FPS: 0")
         self.realtime_hand_status = QLabel("HAND: None")
@@ -90,6 +126,10 @@ class MainWindow(QWidget):
         status_align.addWidget(self.realtime_hand_status)
         status_align.addWidget(self.realtime_photo_status)
         self.video_status.setLayout(status_align)
+
+        self.video_status.setStyleSheet("background-color: #E0E1DD;"
+                                        "border: none;"
+                                        "border-radius: 3px;")
 
         videoField = QVBoxLayout()
         videoField.addWidget(self.frm)
@@ -104,6 +144,13 @@ class MainWindow(QWidget):
         self.setLayout(mainField)
         self.setWindowTitle("Camera App")
         self.setFixedSize(size)
+
+        self.setAutoFillBackground(True)
+        mainPal = QPalette()
+        mainPal.setColor(QPalette.Background, QColor("#0D1B2A"))
+        self.setPalette(mainPal)
+        self.setWindowIcon(QIcon("./data/icons/camera.png"))
+
         self.show()
 
     def onoffCam(self, e):
@@ -156,7 +203,42 @@ class MainWindow(QWidget):
     
     def take_once(self):
         self.video.photo_status = "Once"
-        QMessageBox.about(self, 'Alert','Picture saved.')
+        if not self.video.bThread:
+            self.popup("Alert", "Please open camera.")
+        else:
+            self.popup("Alert", "Picture saved.")
+    
+    def popup(self, title, message):
+        self.popup_window = QDialog()
+
+        self.popup_window.setWindowTitle("Alert")
+        self.popup_window.setGeometry(850, 500, 200, 100)
+
+        vbox = QVBoxLayout()
+        message_label = QLabel(str(message), self)
+        message_label.setStyleSheet("color: #E0E1DD;"
+                                    "font-family: Arial;"
+                                    "font-weight: 400%;"
+                                    "font-size: 13px;")
+        outBtn = QPushButton("Okay")
+        outBtn.clicked.connect(lambda: self.popup_window.destroy())
+        outBtn.setStyleSheet("border-radius: 2px;"
+                             "border: none;"
+                             "color: black;"
+                             "background-color: #E0E1DD;")
+        outBtn.setMaximumHeight(25)
+        vbox.addWidget(message_label)
+        vbox.addWidget(outBtn)
+
+        self.popup_window.setLayout(vbox)
+        self.popup_window.setAutoFillBackground(True)
+
+        popupPal = QPalette()
+        popupPal.setColor(QPalette.Background, QColor("#0D1B2A"))
+        self.popup_window.setPalette(popupPal)
+        self.popup_window.setWindowIcon(QIcon("./data/icons/info.png"))
+
+        self.popup_window.show()
     
     def getPathes(self):
         photo_path = self.video.PATH + "\\storage\\photos\\"
@@ -210,6 +292,11 @@ class MainWindow(QWidget):
         self.GALLARY_NOWINDEX = 0
 
         self.storage_window = QDialog(self)
+        self.storage_window.setWindowIcon(QIcon("./data/icons/storage.png"))
+        self.setAutoFillBackground(True)
+        storagePal = QPalette()
+        storagePal.setColor(QPalette.Background, QColor("#0D1B2A"))
+        self.storage_window.setPalette(storagePal)
 
         self.gallary_area = QVBoxLayout()
 
@@ -218,12 +305,28 @@ class MainWindow(QWidget):
         self.gallary_toolbar = QHBoxLayout()
         self.gallary_back = QPushButton("<")
         self.gallary_back.clicked.connect(lambda: self.showGallary(self.GALLARY_NOWINDEX-1))
+        self.gallary_back.setStyleSheet("border-radius: 2px;"
+                                        "border: 1px solid #E0E1DD;"
+                                        "background: none;"
+                                        "font-family: Arial;"
+                                        "color: #E0E1DD;"
+                                        "font-weight: 400%;")
+        self.gallary_back.setMaximumSize(120, 50)
 
         self.gallary_go = QPushButton(">")
         self.gallary_go.clicked.connect(lambda: self.showGallary(self.GALLARY_NOWINDEX+1))
+        self.gallary_go.setStyleSheet("border-radius: 2px;"
+                                      "border: 1px solid #E0E1DD;"
+                                      "background: none;"
+                                      "font-family: Arial;"
+                                      "color: #E0E1DD;"
+                                      "font-weight: 400%;")
+        self.gallary_go.setMaximumSize(120, 50)
 
         self.gallary_index = QLabel("1")
         self.gallary_index.setAlignment(Qt.AlignCenter)
+        self.gallary_index.setStyleSheet("color: #E0E1DD;"
+                                         "font-weight: 400%;")
 
         self.gallary_toolbar.addWidget(self.gallary_back)
         self.gallary_toolbar.addWidget(self.gallary_index)
@@ -235,6 +338,13 @@ class MainWindow(QWidget):
 
         self.allClearBtn = QPushButton("Clear")
         self.allClearBtn.clicked.connect(self.clearFiles)
+        self.allClearBtn.setStyleSheet("border-radius: 2px;"
+                                       "border: 1px solid #E0E1DD;"
+                                       "background: none;"
+                                       "font-family: Arial;"
+                                       "color: #E0E1DD;"
+                                       "font-weight: 400%;")
+        self.allClearBtn.setMaximumSize(120, 50)
 
         self.gallary_shortcut.addWidget(self.gallary_slider)
         self.gallary_shortcut.addWidget(self.allClearBtn)
@@ -277,7 +387,7 @@ class MainWindow(QWidget):
             self.video.saturationScale = 1 + ((value - 50)*2 - 1)/100
     
     def changeExtension(self, value:str):
-        self.video.extension = value.lower()
+        self.video.extension = "." + value.lower()
 
     def resetValues(self):
         self.video.colorFilterOption = "None"
@@ -297,11 +407,27 @@ class MainWindow(QWidget):
         tab = QWidget()
         self.colorFilters = ["None", "Gray", "Warm", "Cool", "Contrast", "Daylight", "Reversal", "Cartoon"]
 
+        tab.setAutoFillBackground(True)
+        settingPal = QPalette()
+        settingPal.setColor(QPalette.Background, QColor("#1B263B"))
+        tab.setPalette(settingPal)
+
+        tab.setStyleSheet("font-family: Arial;"
+                          "font-size: 13px;"
+                          "font-weight: 400%;"
+                          "color: #E0E1DD")
+
         self.colorFilterSelect = QComboBox(self)
         for choice in self.colorFilters:
             self.colorFilterSelect.addItem(choice)
         
         self.colorFilterSelect.activated[str].connect(self.changeColorFilter)
+
+        self.colorFilterSelect.setStyleSheet("color: black;"
+                                             "font-family: Arial;"
+                                             "border: none;"
+                                             "border-radius: 2px;"
+                                             "background-color: white;")
 
         extensionFrame = QGroupBox("File Extension")
 
@@ -310,6 +436,12 @@ class MainWindow(QWidget):
         self.extensionSelect = QComboBox(self)
         for extension in self.extensions:
             self.extensionSelect.addItem(extension)
+        
+        self.extensionSelect.setStyleSheet("color: balck;"
+                                           "font-family: Arial;"
+                                           "border: none;"
+                                           "border-radius: 2px;"
+                                           "background-color: white;")
 
         self.extensionSelect.activated[str].connect(self.changeExtension)
 
@@ -319,6 +451,14 @@ class MainWindow(QWidget):
 
         self.resetBtn = QPushButton("Reset", self)
         self.resetBtn.clicked.connect(self.resetValues)
+
+        self.resetBtn.setStyleSheet("border: none;"
+                                    "border-radius: 2px;"
+                                    "background-color: white;"
+                                    "font-family: Arial;"
+                                    "color: black;")
+        
+        self.resetBtn.setMaximumHeight(25)
 
         filters_field = QVBoxLayout()
         filters_field.addWidget(self.colorFilterSelect)
@@ -360,7 +500,17 @@ class MainWindow(QWidget):
         return tab
 
     def get_debugTab(self) -> QWidget:
-        tab = QTabWidget()
+        tab = QWidget()
+        tab.setAutoFillBackground(True)
+
+        debugPal = QPalette()
+        debugPal.setColor(QPalette.Background, QColor("#1B263B"))
+        tab.setPalette(debugPal)
+
+        tab.setStyleSheet("font-family: Arial;"
+                          "font-size: 13px;"
+                          "font-weight: 400%;"
+                          "color: #E0E1DD")
 
         self.faceOption = QCheckBox("Face")
         self.faceOption.clicked.connect(self.getOption)
@@ -395,6 +545,12 @@ class MainWindow(QWidget):
 
     def createSettingsWindow(self):
         self.settings_window = QDialog(self)
+        self.settings_window.setAutoFillBackground(True)
+        
+        settingPal = QPalette()
+        settingPal.setColor(QPalette.Background, QColor("#0D1B2A"))
+        self.settings_window.setPalette(settingPal)
+        self.settings_window.setWindowIcon(QIcon("./data/icons/setting.png"))
         
         tab_setting = self.get_settingTab()
         tab_info = self.get_debugTab()
@@ -407,7 +563,7 @@ class MainWindow(QWidget):
         vbox.addWidget(Tabs)
 
         self.settings_window.setWindowTitle("Settings")
-        self.settings_window.setGeometry(300, 300, 240, 180)
+        self.settings_window.setGeometry(850, 300, 240, 180)
         self.settings_window.setWindowModality(Qt.NonModal)
         self.settings_window.setLayout(vbox)
 

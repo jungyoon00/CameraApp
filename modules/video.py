@@ -48,7 +48,6 @@ def hand_model():
         min_tracking_confidence=0.5
     )
 
-
 model_threads = [gesture_model, hand_model]
 running_threads = []
 
@@ -63,8 +62,6 @@ for task in running_threads:
     task.join()
 
 print("========================")
-
-
 
 class Video(QObject):
 
@@ -84,6 +81,8 @@ class Video(QObject):
         self.hand_status = None
         self.photo_status = None
         self.take_interval = False
+
+        self.bThread = False
 
         self.recording = False
         self.fourcc = cv2.VideoWriter_fourcc(*'XVID')
