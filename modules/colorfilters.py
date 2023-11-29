@@ -8,7 +8,6 @@ def gamma_function(channel, gamma):
     channel = cv2.LUT(channel, table)
     return channel
 
-
 def gray_filter(img):
     return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
